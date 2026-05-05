@@ -1,0 +1,30 @@
+# Binaries
+rooms
+rooms.exe
+migrator
+migrator.exe
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test & coverage
+*.test
+*.out
+coverage.html
+
+# Config with secrets
+internal/config/config.env
+
+# Vendor
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

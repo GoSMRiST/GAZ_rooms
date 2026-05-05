@@ -1,0 +1,2 @@
+ALTER TABLE rooms DROP COLUMN IF EXISTS type_id;
+DROP TABLE IF EXISTS room_types;
