@@ -10,7 +10,6 @@ import (
 
 	"rooms/internal/config"
 	"rooms/internal/infrastructure/grpcclient"
-	"rooms/internal/infrastructure/messengerclient"
 	"rooms/internal/middleware"
 	"rooms/internal/repository"
 	"rooms/internal/service"
@@ -37,15 +36,7 @@ func NewApp(log *slog.Logger, cfg *config.Config, db *repository.DataBase) (*App
 		return nil, err
 	}
 
-	var messengerNotifier service.MessengerNotifier
-	if cfg.MessengerURL != "" && cfg.MessengerKey != "" {
-		messengerNotifier = messengerclient.New(cfg.MessengerURL, cfg.MessengerKey)
-		log.Info("messenger client configured", "url", cfg.MessengerURL)
-	} else {
-		log.Info("messenger integration disabled (MESSENGER_INTERNAL_URL not set)")
-	}
-
-	roomService := service.NewRoomService(log, db, userClient, messengerNotifier)
+	roomService := service.NewRoomService(log, db, userClient)
 	roomHandler := rest.NewRoomHandler(log, roomService)
 
 	engine := gin.New()

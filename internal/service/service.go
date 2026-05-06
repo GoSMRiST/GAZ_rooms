@@ -31,40 +31,14 @@ type UserVerifier interface {
 	GetUserInfo(ctx context.Context, userID int) (verified bool, subscription core.Subscription, err error)
 }
 
-type MessengerNotifier interface {
-	OnRoomCreated(ctx context.Context, roomID, leaderID int) error
-	OnRoomDeleted(ctx context.Context, roomID int) error
-	OnMemberJoined(ctx context.Context, roomID, userID int) error
-	OnMemberLeft(ctx context.Context, roomID, userID int) error
-	OnLeaderDeleted(ctx context.Context, leaderID int) error
-}
-
-type noopMessenger struct{}
-
-func (noopMessenger) OnRoomCreated(_ context.Context, _, _ int) error  { return nil }
-func (noopMessenger) OnRoomDeleted(_ context.Context, _ int) error     { return nil }
-func (noopMessenger) OnMemberJoined(_ context.Context, _, _ int) error { return nil }
-func (noopMessenger) OnMemberLeft(_ context.Context, _, _ int) error   { return nil }
-func (noopMessenger) OnLeaderDeleted(_ context.Context, _ int) error   { return nil }
-
 type RoomService struct {
-	log       *slog.Logger
-	repo      RepositoryInterface
-	verifier  UserVerifier
-	messenger MessengerNotifier
+	log      *slog.Logger
+	repo     RepositoryInterface
+	verifier UserVerifier
 }
 
-func NewRoomService(log *slog.Logger, repo RepositoryInterface, verifier UserVerifier, notifier MessengerNotifier) *RoomService {
-	if notifier == nil {
-		notifier = noopMessenger{}
-	}
-	return &RoomService{log: log, repo: repo, verifier: verifier, messenger: notifier}
-}
-
-func (s *RoomService) notifyMessenger(ctx context.Context, action string, fn func() error) {
-	if err := fn(); err != nil {
-		s.log.Warn("messenger notification failed", "action", action, "err", err)
-	}
+func NewRoomService(log *slog.Logger, repo RepositoryInterface, verifier UserVerifier) *RoomService {
+	return &RoomService{log: log, repo: repo, verifier: verifier}
 }
 
 func (s *RoomService) GetRoomTypes(ctx context.Context) ([]core.RoomType, error) {
@@ -137,10 +111,6 @@ func (s *RoomService) CreateRoom(ctx context.Context, room *core.Room) (*core.Ro
 		return nil, err
 	}
 
-	s.notifyMessenger(ctx, "OnRoomCreated", func() error {
-		return s.messenger.OnRoomCreated(ctx, created.RoomID, created.UserID)
-	})
-
 	return created, nil
 }
 
@@ -208,10 +178,6 @@ func (s *RoomService) JoinRoom(ctx context.Context, roomID int, userID int) erro
 		return err
 	}
 
-	s.notifyMessenger(ctx, "OnMemberJoined", func() error {
-		return s.messenger.OnMemberJoined(ctx, roomID, userID)
-	})
-
 	return nil
 }
 
@@ -225,10 +191,6 @@ func (s *RoomService) LeaveRoom(ctx context.Context, roomID int, userID int) err
 		return err
 	}
 
-	s.notifyMessenger(ctx, "OnMemberLeft", func() error {
-		return s.messenger.OnMemberLeft(ctx, roomID, userID)
-	})
-
 	return nil
 }
 
@@ -241,10 +203,6 @@ func (s *RoomService) DeleteRoom(ctx context.Context, roomID int, userID int) er
 		s.log.Error("DeleteRoom: repo error", "error", err)
 		return err
 	}
-
-	s.notifyMessenger(ctx, "OnRoomDeleted", func() error {
-		return s.messenger.OnRoomDeleted(ctx, roomID)
-	})
 
 	return nil
 }
@@ -311,12 +269,6 @@ func (s *RoomService) DeleteRoomsByUser(ctx context.Context, userID int) (int64,
 		return 0, err
 	}
 	s.log.Info("DeleteRoomsByUser: completed", "user_id", userID, "deleted", count)
-
-	if count > 0 {
-		s.notifyMessenger(ctx, "OnLeaderDeleted", func() error {
-			return s.messenger.OnLeaderDeleted(ctx, userID)
-		})
-	}
 
 	return count, nil
 }

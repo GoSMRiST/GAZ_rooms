@@ -21,9 +21,6 @@ type Config struct {
 	AuthGrpcAddr string `env:"AUTH_GRPC_ADDR"`
 
 	UserGrpcAddr string `env:"USER_GRPC_ADDR"`
-
-	MessengerURL string `env:"MESSENGER_INTERNAL_URL"`
-	MessengerKey string `env:"MESSENGER_INTERNAL_KEY"`
 }
 
 func InitConfig() (*Config, error) {

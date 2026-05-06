@@ -1,0 +1,21 @@
+# Секреты — не копируем в образ, передаём через docker-compose environment
+internal/config/config.env
+
+# Скомпилированные бинарники (Windows)
+*.exe
+app
+migrator
+
+# Тесты и покрытие
+*.out
+*.test
+coverage.html
+
+# Git и IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# Vendor — используем go mod download
+vendor/

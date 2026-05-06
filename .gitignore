@@ -1,6 +1,8 @@
-# Binaries
+# Бинарники
 rooms
 rooms.exe
+app
+app.exe
 migrator
 migrator.exe
 *.exe
@@ -9,12 +11,12 @@ migrator.exe
 *.so
 *.dylib
 
-# Test & coverage
+# Тесты и покрытие
 *.test
 *.out
 coverage.html
 
-# Config with secrets
+# Секреты
 internal/config/config.env
 
 # Vendor
